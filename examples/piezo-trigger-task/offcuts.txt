@@ -1,0 +1,46 @@
+/***** offcuts.txt *****/
+
+0. Log piezo input to the scope:
+
+	scope.log(gPiezoInput):
+
+1. Rectification of piezo input:
+
+	piezoRectified = gPiezoInput;
+
+	// Full wave rectification
+	if(piezoRectified < 0)
+		piezoRectified *= -1.0f;
+		
+	// log audio input and rectified input
+	scope.log(gPiezoInput, piezoRectified);		
+
+2. Peak detection	
+
+		// Peak Detection
+		// Record the highesst peak
+		if(piezoRectified >= peakValue) {
+			peakValue = piezoRectified;
+			triggered = 0;
+		// Force peak value to decay over time
+		// to be able to detect next peak
+		} else if(peakValue >= rolloffRate) {
+			peakValue -= rolloffRate;
+		}
+		
+		// log the rectified input & peakValue 
+		scope.log(gPiezoInput, peakValue);		
+		
+3. Onset detection
+		
+	    // Threshold peak to trigger	
+	  	if(piezoRectified < peakValue - amountBelowPeak && peakValue >= thresholdToTrigger && !triggered) {
+			// Indicate that we've triggered
+			// Wait for next peak before triggering again
+			triggered = 1;
+			// Start sample playback
+			gReadPtr = 0;
+	  	}
+
+		// log the rectified input, peakValue from onset detection and audio output on the scope
+		scope.log(piezoRectified, peakValue, out);
